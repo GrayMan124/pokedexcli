@@ -20,9 +20,14 @@ func startRepl() {
 
 		commandName := words[0]
 
+		start_conifg := config{
+			Previous: "",
+			Next:     "https://pokeapi.co/api/v2/location-area/1/",
+		}
+
 		command, exists := getCommands()[commandName]
 		if exists {
-			err := command.callback()
+			err := command.callback(&start_conifg)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -40,10 +45,15 @@ func cleanInput(text string) []string {
 	return words
 }
 
+type config struct {
+	Previous string
+	Next     string
+}
+
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*config) error
 }
 
 func getCommands() map[string]cliCommand {
