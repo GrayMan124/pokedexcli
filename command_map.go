@@ -63,8 +63,10 @@ type LocationArea struct {
 
 func commandMap(conf *config) error {
 	var names [20]string
+	baseUrl := "https://pokeapi.co/api/v2/location-area/"
 	for i := 0; i < 20; i++ {
-		res, err := http.Get(conf.Next)
+		nextUrl := fmt.Sprintf(baseUrl+"%v/", i+1)
+		res, err := http.Get(nextUrl)
 		if err != nil {
 			log.Fatal(err)
 		}
