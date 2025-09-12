@@ -66,16 +66,27 @@ func commandMap(conf *config) error {
 	baseUrl := "https://pokeapi.co/api/v2/location-area/"
 	for i := 0; i < 20; i++ {
 		nextUrl := fmt.Sprintf(baseUrl+"%v/", i+1)
-		res, err := http.Get(nextUrl)
-		if err != nil {
-			log.Fatal(err)
+
+		data, exists := conf.cache.Get(nextUrl)
+		if !exists {
+			res, err := http.Get(nextUrl)
+			if err != nil {
+				log.Fatal(err)
+			}
+			body, err := io.ReadAll(res.Body)
+			var location LocationArea
+			if err := json.Unmarshal(body, &location); err != nil {
+				log.Fatalf("Error unmarshalling Json: %v", err)
+			}
+			names[i] = location.Name
+			conf.cache.Add(nextUrl, body)
+		} else {
+			var location LocationArea
+			if err := json.Unmarshal(data, &location); err != nil {
+				log.Fatalf("Error unmarshalling Json: %v", err)
+			}
+			names[i] = location.Name
 		}
-		body, err := io.ReadAll(res.Body)
-		var location LocationArea
-		if err := json.Unmarshal(body, &location); err != nil {
-			log.Fatalf("Error unmarshalling Json: %v", err)
-		}
-		names[i] = location.Name
 		fmt.Println(names[i])
 	}
 

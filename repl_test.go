@@ -1,42 +1,75 @@
 package main
 
-import "testing"
+import (
+	"fmt"
+	"github.com/GrayMan124/pokedexcli/internal/pokecache"
+	"testing"
+	"time"
+)
 
-func TestCleanInput(t *testing.T) {
+func TestAddGet(t *testing.T) {
+	const interval = 5 * time.Second
+
 	cases := []struct {
-		input    string
-		expected []string
+		key string
+		val []byte
 	}{
 		{
-			input:    "  ",
-			expected: []string{},
+			key: "jakPanhesusPowiedzial.com",
+			val: []byte("Tak jak pan jezus powiedzial"),
 		},
 		{
-			input:    "  hello  ",
-			expected: []string{"hello"},
-		},
-		{
-			input:    "  hello  world  ",
-			expected: []string{"hello", "world"},
-		},
-		{
-			input:    "  HellO  World  ",
-			expected: []string{"hello", "world"},
+			key: "Jacob.Galuska",
+			val: []byte("To mala pietruszka"),
 		},
 	}
 
-	for _, c := range cases {
-		actual := cleanInput(c.input)
-		if len(actual) != len(c.expected) {
-			t.Errorf("lengths don't match: '%v' vs '%v'", actual, c.expected)
-			continue
-		}
-		for i := range actual {
-			word := actual[i]
-			expectedWord := c.expected[i]
-			if word != expectedWord {
-				t.Errorf("cleanInput(%v) == %v, expected %v", c.input, actual, c.expected)
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("Running case %v", i), func(t *testing.T) {
+			cache := pokecache.NewCache(interval)
+			cache.Add(c.key, c.val)
+			val, ok := cache.Get(c.key)
+			if !ok {
+				t.Errorf("Expected to find key")
+				return
 			}
-		}
+			if string(val) != string(c.val) {
+				t.Errorf("Incorrect val")
+				return
+			}
+		})
+
+	}
+
+}
+
+func TestReapLoop(t *testing.T) {
+	const baseTime = 5 * time.Millisecond
+	const waitTime = baseTime / 2
+
+	cache := pokecache.NewCache(baseTime)
+	cache.Add("Jacob.Galuska", []byte("To mala pietruszka"))
+
+	_, ok := cache.Get("Jacob.Galuska")
+	if !ok {
+		t.Errorf("Expected to find Jacob")
+	}
+
+	time.Sleep(waitTime + 2*time.Millisecond)
+
+	cache.Add("Jak.Pan", []byte("Tak jak Pan"))
+
+	time.Sleep(waitTime)
+
+	_, ok = cache.Get("Jacob.Galuska")
+	if ok {
+		t.Errorf("Expected to not find Jacob")
+		return
+	}
+
+	_, ok = cache.Get("Jak.Pan")
+	if !ok {
+		t.Errorf("Expected to find Jak Pan")
+		return
 	}
 }

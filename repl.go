@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/GrayMan124/pokedexcli/internal/pokecache"
 	"os"
 	"strings"
 )
@@ -23,6 +24,7 @@ func startRepl() {
 		start_conifg := config{
 			Previous: "",
 			Next:     "https://pokeapi.co/api/v2/location-area/1/",
+			cache:    *pokecache.NewCache(5),
 		}
 
 		command, exists := getCommands()[commandName]
@@ -48,6 +50,7 @@ func cleanInput(text string) []string {
 type config struct {
 	Previous string
 	Next     string
+	cache    pokecache.Cache
 }
 
 type cliCommand struct {
