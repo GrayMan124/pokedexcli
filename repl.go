@@ -20,11 +20,15 @@ func startRepl() {
 		}
 
 		commandName := words[0]
-
+		commandInput := ""
+		if len(words) > 1 {
+			commandInput = words[1]
+		}
 		start_conifg := config{
 			Previous: "",
 			Next:     "https://pokeapi.co/api/v2/location-area/1/",
 			cache:    *pokecache.NewCache(5),
+			input:    commandInput,
 		}
 
 		command, exists := getCommands()[commandName]
@@ -50,6 +54,7 @@ func cleanInput(text string) []string {
 type config struct {
 	Previous string
 	Next     string
+	input    string
 	cache    pokecache.Cache
 }
 
@@ -80,6 +85,11 @@ func getCommands() map[string]cliCommand {
 			name:        "mapb",
 			description: "Explore the map backwards",
 			callback:    commandMapb,
+		},
+		"explore": {
+			name:        "explore",
+			description: "Explore the pokemons in the map",
+			callback:    commandExplore,
 		},
 	}
 }
