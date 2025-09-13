@@ -10,6 +10,14 @@ import (
 
 func startRepl() {
 	reader := bufio.NewScanner(os.Stdin)
+	start_conifg := config{
+		Previous: "",
+		Next:     "https://pokeapi.co/api/v2/location-area/1/",
+		cache:    *pokecache.NewCache(5),
+		input:    "",
+		pokedex:  make(map[string]Pokemon),
+	}
+
 	for {
 		fmt.Print("Pokedex > ")
 		reader.Scan()
@@ -20,17 +28,9 @@ func startRepl() {
 		}
 
 		commandName := words[0]
-		commandInput := ""
 		if len(words) > 1 {
-			commandInput = words[1]
+			start_conifg.input = words[1]
 		}
-		start_conifg := config{
-			Previous: "",
-			Next:     "https://pokeapi.co/api/v2/location-area/1/",
-			cache:    *pokecache.NewCache(5),
-			input:    commandInput,
-		}
-
 		command, exists := getCommands()[commandName]
 		if exists {
 			err := command.callback(&start_conifg)
@@ -56,6 +56,7 @@ type config struct {
 	Next     string
 	input    string
 	cache    pokecache.Cache
+	pokedex  map[string]Pokemon
 }
 
 type cliCommand struct {
@@ -90,6 +91,11 @@ func getCommands() map[string]cliCommand {
 			name:        "explore",
 			description: "Explore the pokemons in the map",
 			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "Try to catch a pokemon",
+			callback:    commandCatch,
 		},
 	}
 }
